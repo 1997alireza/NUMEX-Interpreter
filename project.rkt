@@ -8,9 +8,22 @@
 
 ;; Add the missing ones
 
+(struct var  (string)    #:transparent)
 (struct int  (num)    #:transparent)  ;; a constant number, e.g., (int 17)
-(struct add  (e1 e2)  #:transparent)  ;; add two expressions
 
+(struct add  (e1 e2)  #:transparent)  ;; add two expressions
+(struct mult (e1 e2)  #:transparent)  ;; multiply two expressions
+(struct neg  (num)    #:transparent)
+
+(struct islthan (e1 e2)    #:transparent)
+(struct ifzero (e1 e2 e3)    #:transparent)
+(struct ifgthan (e1 e2 e3 e4)    #:transparent)
+
+(struct mlet (s e1 e2)    #:transparent)
+
+(struct apair (e1 e2) #:transparent)
+(struct first (e1) #:transparent)
+(struct second (e1) #:transparent)
 
 (struct fun  (nameopt formal body) #:transparent) ;; a recursive(?) 1-argument function
 (struct call (funexp actual)       #:transparent) ;; function call
@@ -22,6 +35,8 @@
 ;; a closure is not in "source" programs; it is what functions evaluate to
 (struct closure (env fun) #:transparent) 
 
+
+
 ;; Problem 1
 
 (define (racketlist->numexlist xs) "CHANGE")
@@ -32,7 +47,7 @@
 ;; lookup a variable in an environment
 ;; Complete this function
 (define (envlookup env str)
-  (cond [(null? env) (error "unbound variable during evaluation" str)]
+  (cond [(null? env) (error "unbound variable during evaluation" str)])
   		"CHANGE" 
 		)
 
