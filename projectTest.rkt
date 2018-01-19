@@ -16,7 +16,7 @@
    (check-equal? (eval-exp (add (int 2) (int 2))) (int 4) "add simple test")
 
    (check-exn (lambda (x) (string=? (exn-message x) "NUMEX addition applied to non-number"))
-              (lambda () (eval-exp (add (int 2) (aunit))))
+              (lambda () (eval-exp (add (int 2) (munit))))
               "add bad argument")
 
    (check-equal? (numexlist->racketlist

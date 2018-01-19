@@ -102,7 +102,7 @@
            (if (int? v1)
                (if (equal? (int-num v1) 0)
                    (eval-under-env (ifzero-e2 e) env)
-                   (eval-under-env (ifzero-e2 e) env))
+                   (eval-under-env (ifzero-e3 e) env))
                (error "NUMEX iszero applied to non-number")))]
         [(ifgthan? e)
          (let ([v1 (eval-under-env (ifgthan-e1 e) env)]
@@ -127,7 +127,7 @@
          (let ([v (eval-under-env (first-e1 e) env)])
            (if (apair? v)
                (apair-e1 v)
-               (error "NUMEX first applied to non-apair")
+               (error "NUMEX first applied to non-apair" e)
                ))]
         [(second? e)
          (let ([v (eval-under-env (second-e1 e) env)])
@@ -141,7 +141,7 @@
 
         [(fun? e)
          (if (and (or (string? (fun-nameopt e)) (null? (fun-nameopt e))) (string? (fun-formal e)))
-             (closure null e)
+             (closure env e)
              (error "NUMEX function name and parameter name must be string"))]
         [(call? e)
          (let ([v (eval-under-env (call-actual e) env)]
@@ -149,10 +149,10 @@
            (if (closure? clsr)
                (let ([clsrFun (closure-fun clsr)])
                  (if (null? (fun-nameopt clsrFun))
-                     (eval-under-env (fun-body clsrFun) (cons (cons (fun-formal clsrFun) (call-actual e)) (closure-env clsr)))
-                     (eval-under-env (fun-body clsrFun) (cons (cons (fun-nameopt clsrFun) (fun-body clsrFun)) (cons (cons (fun-formal clsrFun) (call-actual e)) (closure-env clsr))))))
-               (error "NUMEX call applied to non-function")))]
-         
+                     (eval-under-env (fun-body clsrFun) (cons (cons (fun-formal clsrFun) v) (closure-env clsr)))
+                     (eval-under-env (fun-body clsrFun) (cons (cons (fun-nameopt clsrFun) clsr) (cons (cons (fun-formal clsrFun) v) (closure-env clsr))))))
+               (error "NUMEX call applied to non-function" e)))]
+         [(closure? e) e]
          
         ;; CHANGE add more cases here
         [#t (error (format "bad NUMEX expression: ~v" e))]))
@@ -166,17 +166,33 @@
 (define (ifmunit e1 e2 e3)
   (ifgthan (ismunit e1) (int 0) e2 e3))
 
-(define (mlet* bs e2) "CHANGE")
+(define (mlet* bs e2)
+  (if (equal? bs null)
+      e2
+      (mlet (car (car bs)) (cdr (car bs)) (mlet* (cdr bs) e2))))
+  
 
-(define (ifeq e1 e2 e3 e4) "CHANGE")
-#|
+(define (ifeq e1 e2 e3 e4)
+  (mlet "_x" e1 (mlet "_y" e2
+                      (ifgthan (var "_x") (var "_y") e4
+                               (ifgthan (var "_y") (var "_x") e4 e3)))))
+
 ;; Problem 4
 
-(define numex-map "CHANGE")
+(define numex-map
+  (fun null "_map-func"
+  (fun "_self" "_nList"
+       (ifzero (ismunit (var "_nList"))
+                        (apair (call (var "_map-func") (first (var "_nList")))
+                               (call (var "_self") (second (var "_nList"))))
+                        (munit)))))
 
 (define numex-mapAddN
   (mlet "map" numex-map
-        "CHANGE (notice map is now in NUMEX scope)"))
+        (fun null "i"
+             (call (var "map") (fun null "xL" (add (var "xL") (var "i")))))))
+
+
 
 ;; Challenge Problem
 
@@ -193,4 +209,4 @@
 ;; Do NOT change this
 (define (eval-exp-c e)
   (eval-under-env-c (compute-free-vars e) null))
-;; |#
+;;
